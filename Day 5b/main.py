@@ -22,8 +22,7 @@ with open(file_path, 'r') as file:
         if line_num == 1:
             seed_numbers = list([int(num) for num in (line.split(':'))[1].split()])
             for i in range(0, len(seed_numbers), 2):
-                seed_ranges.append(range(seed_numbers[i], seed_numbers[i]+seed_numbers[i+1]))
-                total_values_to_check += seed_numbers[i+1]
+                seed_ranges.append((seed_numbers[i], seed_numbers[i+1]))
             continue
 
         if not line:
@@ -39,42 +38,73 @@ with open(file_path, 'r') as file:
 
         values = list([int(num) for num in line.split()])
         current_map.append({
-            'source': values[1],
+            'range': (values[1], values[2]),
             'destination': values[0],
-            'range': values[2] - 1,
         })
 
     if current_map:
         maps.append(current_map)
 
+    def create_null_mappings(map):
+        mappings_by_range_start = {}
+        for mapping in map:
+            mappings_by_range_start[mapping['range'][0]] = mapping
+
+        sorted_range_starts = sorted(mappings_by_range_start.keys())
+        end_of_last_range = 0
+        ordered_map = []
+        for range_start in sorted_range_starts:
+            size_of_gap = range_start - end_of_last_range
+            if size_of_gap > 0:
+                missing_range = (end_of_last_range, size_of_gap)
+                ordered_map.append({'range': missing_range, 'destination': missing_range[0]})
+            ordered_map.append(mappings_by_range_start[range_start])
+            end_of_last_range = range_start + mappings_by_range_start[range_start]['range'][1]
+
+        # Finally add a mapping to infinity
+        ordered_map.append({'range': (end_of_last_range, sys.maxsize), 'destination': end_of_last_range})
+        return ordered_map
+
+    ordered_maps = []
+    for map in maps:
+        ordered_maps.append(create_null_mappings(map))
+
+    def find_overlap(a_start, a_length, b_start, b_length):
+        overlap_start = max(a_start, b_start)
+        overlap_end = min(a_start+a_length-1, b_start+b_length-1)
+
+        if overlap_end < overlap_start:
+            return None
+
+        if overlap_end < a_start or overlap_start < b_start:
+            return None
+
+        if overlap_start > (a_start+a_length-1) or overlap_start > (b_start+b_length-1):
+            return None
+
+        length_of_overlap = overlap_end - overlap_start + 1
+        return (overlap_start, length_of_overlap)
+
+    # seed_ranges
+    mapped_ranges = seed_ranges
+    for map in ordered_maps:
+        transformed_ranges = []
+        for mapped_range in mapped_ranges:
+            for mapping in map:
+                # This could be more efficient if we kept the mapping ranges ordered and stopped when we walked off the end
+                # Ranges are a tuple (start, length)
+                overlap_with_mapping = find_overlap(mapped_range[0], mapped_range[1], mapping['range'][0], mapping['range'][1])
+                if overlap_with_mapping:
+                    map_offset = mapping['destination'] - mapping['range'][0]
+                    transformed_start = (overlap_with_mapping[0] + map_offset)
+                    transformed_range = overlap_with_mapping[1]
+                    transformed_ranges.append((transformed_start, transformed_range))
+        mapped_ranges = transformed_ranges
+
     lowest_end = sys.maxsize
-
-    print(f"Seeds to check: {total_values_to_check}")
-    seeds_checked = 0
-    for seed_range in seed_ranges:
-        for seed in seed_range:
-            seeds_checked += 1
-
-            if seeds_checked % 1000000 == 0:
-                percent_complete = round((seeds_checked / total_values_to_check) * 100, 2)
-                print(f'Have checked {seeds_checked}, {percent_complete}% done, current lowest is {lowest_end}')
-
-            current_value = seed
-            for map in maps:
-                for mapping in map:
-                    if mapping['range'] >= current_value - mapping['source'] >= 0:
-                        new_value = current_value - mapping['source'] + mapping['destination']
-                        #print(f"Mapped {current_value} to {new_value}")
-                        current_value = new_value
-                        break
-                else:
-                    #print(f"No mapping found for {current_value}")
-                    current_value = current_value
-            #print(f"Seed {seed} mapped to {current_value}")
-
-            if current_value < lowest_end:
-                lowest_end = current_value
-                print(f"New lowest end was {lowest_end}")
+    for transformed_range in transformed_ranges:
+        if transformed_range[0] < lowest_end:
+            lowest_end = transformed_range[0]
 
     print(f"Lowest end was {lowest_end}")
     #print(f"Maps are {json.dumps(maps, indent=2)}")
