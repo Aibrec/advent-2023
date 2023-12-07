@@ -91,7 +91,7 @@ with open(file_path, 'r') as file:
         transformed_ranges = []
         for mapped_range in mapped_ranges:
             for mapping in map:
-                # This could be more efficient if we kept the mapping ranges ordered and stopped when we walked off the end
+                # This could be more efficient as we kept the mapping ranges ordered and could stop when we walked off the end
                 # Ranges are a tuple (start, length)
                 overlap_with_mapping = find_overlap(mapped_range[0], mapped_range[1], mapping['range'][0], mapping['range'][1])
                 if overlap_with_mapping:
