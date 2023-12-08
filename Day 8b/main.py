@@ -43,18 +43,23 @@ with open(file_path, 'r') as file:
         direct_map[spot] = apply_directions(spot)
 
     def find_steps_until_z(spot):
-        steps = 0
+        steps = len(directions)
+        spot = direct_map[spot]
         while spot[2] != 'Z':
             spot = direct_map[spot]
             steps += len(directions)
-        return steps
+        return steps, spot
 
     print(f'Started with {len(current_spots)}: {current_spots}')
     steps_required = []
     for spot in current_spots:
-        minimum_steps_requried = find_steps_until_z(spot)
-        print(f'Spot {spot} requires {minimum_steps_requried} steps')
-        steps_required.append(minimum_steps_requried)
+        minimum_steps_requried_to_end, end_spot = find_steps_until_z(spot)
+        steps_required_from_z_to_next_z, second_end_spot = find_steps_until_z(end_spot)
+        print(f'Spot {spot} requires {minimum_steps_requried_to_end} steps and ends on {end_spot}.')
+        print(f'Spot {end_spot} requires {steps_required_from_z_to_next_z} steps and ends on {second_end_spot}.\n')
+        # Every Z goes back to itself in the same number of steps neeed for the matching A to reach it, so that's nice of them.
+        # If they didn't we would have to walk forward until a cycle formed, then find an lcm considering that. Glad we do not have to.
+        steps_required.append(minimum_steps_requried_to_end)
 
     required_steps = math.lcm(*steps_required)
     print(f'lcm {required_steps}')
