@@ -1,4 +1,3 @@
-import re
 from operator import add
 file_path = 'input.txt'
 
@@ -82,12 +81,9 @@ with open(file_path, 'r') as file:
                 break
 
             if sketch[next_location[0]][next_location[1]] == 'S':
-                # We found a loop!
-                print(f'Path was {path}')
                 print(f'Answer is {(len(path) - 1) / 2}')
 
                 s_should_be = find_symbol_to_connect(path[0], path[1], path[-1])
-                print(f'S was {s_should_be}')
                 sketch[start_location[0]].replace('S', s_should_be)
 
                 path_set = set()
@@ -99,18 +95,15 @@ with open(file_path, 'r') as file:
                         return []
 
                     if a[0] == b[0]:
-                        # They are horizontal
                         if a[1] > b[1]:
                             a,b = b,a # We want a to be closer to the left
 
-                        #symbols = (sketch[a[0]][a[1]], sketch[b[0]][b[1]])
                         symbols = f'{sketch[a[0]][a[1]]}{sketch[b[0]][b[1]]}'
 
                         if symbols in {'||', '|L', '|F', 'J|', 'JL', 'JF', '7|', '7L', '7F'}:
                             return [(1,0), (-1,0)]
 
                     if a[1] == b[1]:
-                        # They are vertical
                         if a[0] > b[0]:
                             a,b = b,a # We want a to be closer to the top
 
@@ -151,7 +144,6 @@ with open(file_path, 'r') as file:
                     if b_next not in path_set:
                         next_spots.append(b_next)
 
-
                 def flood_from_location(location):
                     if location in outside_spots:
                         return []
@@ -169,8 +161,6 @@ with open(file_path, 'r') as file:
                             continue
 
                         if next_location in path_set:
-                            # Check for slipping past
-                            # We're ignoring the possibility of slipping on a diagonal
                             if direction[0] != 0 and direction[1] != 0:
                                 continue
 
@@ -184,21 +174,6 @@ with open(file_path, 'r') as file:
                                 possible_slip_directions = set(directions_can_slip_between_locations(adjacent_location, next_location))
                                 if direction in possible_slip_directions:
                                     flood_slipping_between(adjacent_location, next_location, direction)
-                                    # a = adjacent_location
-                                    # b = next_location
-                                    # a_next = (a[0] + direction[0], a[1] + direction[1])
-                                    # b_next = (b[0] + direction[0], b[1] + direction[1])
-                                    #
-                                    #
-                                    # while direction in set():
-                                    #     a_next = (a[0] + direction[0], a[1] + direction[1])
-                                    #     b_next = (b[0] + direction[0], b[1] + direction[1])
-                                    #
-                                    # if a not in path_set:
-                                    #     next_spots.append(a)
-                                    #
-                                    # if b not in path_set:
-                                    #     next_spots.append(b)
                         else:
                             next_spots.append(next_location)
 
@@ -223,12 +198,9 @@ with open(file_path, 'r') as file:
                     line = ""
                     for x in range(len(sketch[0])):
                         if (y,x) in path_set:
-                            #line = f'{line}*'
                             line = f'{line}{sketch[y][x]}'
                         elif (y,x) in contained_spots:
                              line = f'{line}*'
-                        # elif (y,x) in outside_spots:
-                        #     line = f'{line}F'
                         else:
                             line = f'{line}.'
                     nice_sketch.append(line)
@@ -237,23 +209,10 @@ with open(file_path, 'r') as file:
                 print(f'Contained spots: {len(contained_spots)} | {contained_spots}')
                 exit(0)
 
-                # for y, row in enumerate(sketch):
-                #     line_symbols_from_path_seen = 0
-                #     for x, symbol in enumerate(row):
-                #         if x in path_rows[y]:
-                #             if symbol == '|':
-                #                 line_symbols_from_path_seen += 1
-                #         elif line_symbols_from_path_seen % 2 == 1:
-                #             contained_spots += 1
-
             path.append(next_location)
 
             previous_location = location
             location = next_location
-
-        print('Test')
-
-    print('No path found')
 
 
 
