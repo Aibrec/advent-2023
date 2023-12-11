@@ -44,7 +44,7 @@ with open(file_path, 'r') as file:
         # It's manhattan distance
         base_distance = (abs(a[0] - b[0]) + abs(a[1] - b[1]))
 
-        # There's only 5/8 empties in the test set so I'm not bothering to do this in linear time
+        # There's only 5/8 empties in the test set so I'm not bothering to do this in log(n)
         y_start, y_end = sorted([a[0], b[0]])
         empty_rows_between = [y for y in empty_rows if y_end > y > y_start]
 
