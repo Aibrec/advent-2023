@@ -1,7 +1,4 @@
-from operator import add
 file_path = 'input.txt'
-
-line_length = 0
 
 
 def findall(s, sub):
@@ -10,6 +7,7 @@ def findall(s, sub):
     while (pos := s.find(sub, pos + 1)) > -1:
         hits.append(pos)
     return hits
+
 
 with open(file_path, 'r') as file:
     universe = []
@@ -53,8 +51,8 @@ with open(file_path, 'r') as file:
         x_start, x_end = sorted([a[1], b[1]])
         empty_columns_between = [x for x in empty_columns if x_end > x > x_start]
 
-        multipler = 1000000 - 1
-        total_distance = base_distance + (multipler * len(empty_columns_between)) + (multipler * len(empty_rows_between))
+        multiplier = 1000000 - 1
+        total_distance = base_distance + (multiplier * len(empty_columns_between)) + (multiplier * len(empty_rows_between))
         return total_distance
 
     total_distance = 0
