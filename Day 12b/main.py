@@ -1,4 +1,5 @@
 import functools
+import re
 file_path = 'input.txt'
 
 with open(file_path, 'r') as file:
@@ -25,40 +26,30 @@ with open(file_path, 'r') as file:
         return group_size, "", None
 
     @functools.cache
+    def satisfies(springs, expected_spring_groups):
+        springs = re.sub(r'\.+', '.', springs.strip('.'))
+        expected_springs = '.'.join([n * '#' for n in expected_spring_groups])
+        return springs == expected_springs
+
+    @functools.cache
     def solve(springs, spring_groups):
         group_size, springs, incomplete_group_size = get_spring_group(springs)
         if group_size:
-            if not spring_groups or group_size != spring_groups[0]:
+            if group_size != spring_groups[0]:
                 return 0
             else:
                 spring_groups = spring_groups[1:]
 
                 # If there are no spring groups left, we've got a solution if there are no required springs left
                 if not spring_groups:
-                    if springs.find('#') == -1:
-                        return 1
-                    else:
-                        return 0
+                    return springs.find('#') == -1
         elif incomplete_group_size and incomplete_group_size > spring_groups[0]:
             return 0
 
-        first_unknown = springs.find('?')
-        if first_unknown == -1:
-            while spring_groups:
-                group_size, springs, incomplete_group_size = get_spring_group(springs)
-                if group_size != spring_groups[0]:
-                    return 0
-                else:
-                    spring_groups = spring_groups[1:]
-
-            if springs.find('#') == -1:
-                return 1
-            else:
-                return 0
+        if springs.find('?') == -1:
+            return satisfies(springs, spring_groups)
         else:
-            line_with_spring = springs.replace('?', '#', 1)
-            line_with_blank = springs.replace('?', '.', 1)
-            return solve(line_with_spring, spring_groups) + solve(line_with_blank, spring_groups)
+            return solve(springs.replace('?', '#', 1), spring_groups) + solve(springs.replace('?', '.', 1), spring_groups)
 
     total_count = 0
     for line, groups in spring_records:
