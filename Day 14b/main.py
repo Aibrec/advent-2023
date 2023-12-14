@@ -1,6 +1,3 @@
-import copy
-import functools
-import re
 import math
 file_path = 'input.txt'
 
@@ -11,26 +8,16 @@ with open(file_path, 'r') as file:
         platform.append(tuple([c for c in line]))
     platform = tuple(platform)
 
-
-    @functools.cache
     def rotate_clockwise(platform):
-        #rotated_pattern = list([list([platform[y][x] for y in range(len(platform[0]))]) for x in range(len(platform))])
-        rotated_pattern = []
-        for x in range(len(platform)):
-            rotated_pattern.append(tuple([platform[y][x] for y in reversed(range(len(platform)))]))
-        return tuple(rotated_pattern)
+        return tuple([tuple([platform[y][x] for y in reversed(range(len(platform)))]) for x in range(len(platform[0]))])
 
-    @functools.cache
     def tilt_north(platform):
-        load = 0
-
         platform = list([list(line) for line in platform])
         for x in range(len(platform[0])):
             open_rock_y = 0
             for y in range(len(platform)):
                 char = platform[y][x]
                 if char == 'O':
-                    load += len(platform) - open_rock_y
                     platform[y][x] = '.'
                     platform[open_rock_y][x] = 'O'
                     open_rock_y += 1
@@ -40,32 +27,15 @@ with open(file_path, 'r') as file:
                     open_rock_y = y + 1
 
         platform = tuple([tuple(line) for line in platform])
-        return platform, load
+        return platform
 
     def score_platform(platform):
-        load = 0
-        for x in range(len(platform[0])):
-            for y in range(len(platform)):
-                char = platform[y][x]
-                if char == 'O':
-                    load += len(platform) - y
-        return load
+        return sum([(len(platform) - y) * line.count('O') for y, line in enumerate(platform)])
 
-    @functools.cache
     def perform_cycle(platform):
-        platform, load = tilt_north(platform)  # North
-
-        platform = rotate_clockwise(platform)
-        platform, load = tilt_north(platform)  # West
-
-        platform = rotate_clockwise(platform)
-        platform, load = tilt_north(platform)  # South
-
-        platform = rotate_clockwise(platform)
-        platform, load = tilt_north(platform)  # East
-
-        platform = rotate_clockwise(platform)  # And now it's pointed like it arrived.
-
+        for i in range(4):
+            platform = tilt_north(platform)  # North
+            platform = rotate_clockwise(platform)
         return platform
 
     def print_platform(platform):
