@@ -64,7 +64,7 @@ with open(file_path, 'r') as file:
 
     def run_beams(beams):
         seen_beams = set()
-        print(f'\n\nStartng run {beams}')
+        #print(f'\n\nStartng run {beams}')
         while beams:
             beam = beams.pop()
             if beam in seen_beams:
@@ -80,7 +80,6 @@ with open(file_path, 'r') as file:
     max_start = None
     max_count = -1
 
-    # I know I could track which edges light has run off but this runs fast enough why bother
     for x in range(len(grid[0])):
         count = run_beams([((1, 0), (-1, x))])
         energized_tiles = set()
