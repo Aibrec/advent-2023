@@ -12,34 +12,39 @@ with open(file_path, 'r') as file:
 
     # coord format is (y,x)
     # dir format is (0,1), (1,0), and the negatives
-    # Point format is (coord, dir, steps_taken)
+    # Point format is (coord, dir, steps_taken, steps_required)
 
     goal = (len(grid)-1, len(grid[0]) - 1)
     directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
     # Path format is [coords]
-    # Format is [point][score] = (score, path)
-    # New format is [coord][dir][steps]
+    # format is [coord][dir][steps]
     best_paths = {
         (0, 0): {
-            (0, 1): [(0, None), (0, None), (0, None), (0, None)],
-            (0, -1): [(0, None), (0, None), (0, None), (0, None)],
-            (1, 0): [(0, None), (0, None), (0, None), (0, None)],
-            (-1, 0): [(0, None), (0, None), (0, None), (0, None)],
+
         }
     }
 
+    for dir in directions:
+        best_paths[(0,0)][dir] = [(0, None)] * 11
+    best_paths[(0, 0)][(0,0)] = [(0, None)] * 11
+
     default_best = (sys.maxsize, None)
-    default_dir = [default_best, default_best, default_best, default_best]
+    default_dir = [default_best] * 11
 
     def min_score_to_goal(point):
+        #TODO: This is an underestimate due to the move 4 thing
         distance = abs(point[0][0] - goal[0]) + abs(point[0][1] - goal[1])
         score = best_paths[point[0]][point[1]][point[2]][0]
         return score + distance
 
-    def same_point_fewer_steps(point):
-        fewer_steps = [(point[0], point[1], i) for i in range(point[2])]
-        return list(fewer_steps)
+    def apply_direction(coord, direction):
+        next_coord = (coord[0] + direction[0], coord[1] + direction[1])
+        if not (len(grid) > next_coord[0] >= 0) or not (len(grid[0]) > next_coord[1] >= 0):
+            return next_coord, None
+        else:
+            next_score = grid[next_coord[0]][next_coord[1]]
+            return next_coord, next_score
 
     def expand_point(point):
         coord, direction, steps_taken = point
@@ -49,18 +54,26 @@ with open(file_path, 'r') as file:
             if next_direction == (direction[0]*-1, direction[1]*-1):
                 continue  # Can't reverse direction
 
-            next_coord = (coord[0] + next_direction[0], coord[1] + next_direction[1])
-            if not (len(grid) > next_coord[0] >= 0) or not (len(grid[0]) > next_coord[1] >= 0):
-                continue
-
             if direction == next_direction:
                 next_steps_taken = steps_taken + 1
-                if next_steps_taken > 3:
+                if next_steps_taken > 10:
                     continue
+                next_coord, add_score = apply_direction(coord, next_direction)
             else:
-                next_steps_taken = 1
+                next_steps_taken = 4
+                add_score = 0
+                next_coord = coord
+                for i in range(next_steps_taken):
+                    next_coord, step_score = apply_direction(next_coord, next_direction)
+                    if step_score == None:
+                        add_score = None
+                        break
+                    add_score += step_score
 
-            next_score = score + grid[next_coord[0]][next_coord[1]]
+            if add_score is None:
+                continue
+
+            next_score = score + add_score
             next_point = (next_coord, next_direction, next_steps_taken)
 
             if next_coord not in best_paths:
@@ -81,7 +94,7 @@ with open(file_path, 'r') as file:
                 expanded.append(next_point)
         return expanded
 
-    points_to_expand = [(sys.maxsize, ((0, 0), (0, 1), 0))]  # (min score, points)
+    points_to_expand = [(sys.maxsize, ((0, 0), (0, 0), 0))]  # (min score, points)
     min_goal_point = None
     min_goal_score = sys.maxsize
     while points_to_expand:
@@ -101,20 +114,6 @@ with open(file_path, 'r') as file:
         if min_goal_point:
             points_to_expand = list([p for p in points_to_expand if p[0] < min_goal_score])
 
-    #score_to_goal = best_paths[goal[0]][goal[1]][0]
-    # goal_options = []
-    # best_score = sys.maxsize
-    # best_path = None
-    # for dir in directions:
-    #     for steps_taken in range(1, 4):
-    #         option = (goal, dir, steps_taken)
-    #         if option in best_paths:
-    #             score = best_paths[option][0]
-    #             if best_score > score:
-    #                 best_score = score
-    #                 best_path = best_paths[option][1]
-    #             goal_options.append((option, best_paths[option]))
-
     # best_path = list([p[0] for p in best_path])
     print(f'Min goal score was {min_goal_score}')
 
@@ -125,6 +124,7 @@ with open(file_path, 'r') as file:
     while True:
         coord = point[0]
         if coord == (0, 0):
+            path_to_goal.append(coord)
             break
 
         if coord == (9,12):
