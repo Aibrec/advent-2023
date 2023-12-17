@@ -1,4 +1,3 @@
-import math
 import sys
 import heapq
 
@@ -101,21 +100,6 @@ with open(file_path, 'r') as file:
         if min_goal_point:
             points_to_expand = list([p for p in points_to_expand if p[0] < min_goal_score])
 
-    #score_to_goal = best_paths[goal[0]][goal[1]][0]
-    # goal_options = []
-    # best_score = sys.maxsize
-    # best_path = None
-    # for dir in directions:
-    #     for steps_taken in range(1, 4):
-    #         option = (goal, dir, steps_taken)
-    #         if option in best_paths:
-    #             score = best_paths[option][0]
-    #             if best_score > score:
-    #                 best_score = score
-    #                 best_path = best_paths[option][1]
-    #             goal_options.append((option, best_paths[option]))
-
-    # best_path = list([p[0] for p in best_path])
     print(f'Min goal score was {min_goal_score}')
 
     path_to_goal = []
@@ -126,9 +110,6 @@ with open(file_path, 'r') as file:
         coord = point[0]
         if coord == (0, 0):
             break
-
-        if coord == (9,12):
-            print("We're at the oddity")
 
         score_of_coord = grid[coord[0]][coord[1]]
         score_to_goal += score_of_coord

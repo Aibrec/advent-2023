@@ -1,7 +1,9 @@
-import math
+import time
+import functools
 import sys
 import heapq
 
+start_time = time.time()
 file_path = 'input.txt'
 
 with open(file_path, 'r') as file:
@@ -33,11 +35,12 @@ with open(file_path, 'r') as file:
     default_dir = [default_best] * 11
 
     def min_score_to_goal(point):
-        #TODO: This is an underestimate due to the move 4 thing
+        # This is an underestimate due to the move 4 thing
         distance = abs(point[0][0] - goal[0]) + abs(point[0][1] - goal[1])
         score = best_paths[point[0]][point[1]][point[2]][0]
         return score + distance
 
+    @functools.cache
     def apply_direction(coord, direction):
         next_coord = (coord[0] + direction[0], coord[1] + direction[1])
         if not (len(grid) > next_coord[0] >= 0) or not (len(grid[0]) > next_coord[1] >= 0):
@@ -45,6 +48,18 @@ with open(file_path, 'r') as file:
         else:
             next_score = grid[next_coord[0]][next_coord[1]]
             return next_coord, next_score
+
+    @functools.cache
+    def apply_direction_4x(coord, direction):
+        score = 0
+        for i in range(4):
+            coord, step_score = apply_direction(coord, direction)
+            if step_score is None:
+                score = None
+                break
+            else:
+                score += step_score
+        return coord, score
 
     def expand_point(point):
         coord, direction, steps_taken = point
@@ -61,14 +76,7 @@ with open(file_path, 'r') as file:
                 next_coord, add_score = apply_direction(coord, next_direction)
             else:
                 next_steps_taken = 4
-                add_score = 0
-                next_coord = coord
-                for i in range(next_steps_taken):
-                    next_coord, step_score = apply_direction(next_coord, next_direction)
-                    if step_score == None:
-                        add_score = None
-                        break
-                    add_score += step_score
+                next_coord, add_score = apply_direction_4x(coord, next_direction)
 
             if add_score is None:
                 continue
@@ -111,35 +119,9 @@ with open(file_path, 'r') as file:
                 if min_possible_score < min_goal_score:
                     heapq.heappush(points_to_expand, (min_score_to_goal(p), p))
 
-        if min_goal_point:
-            points_to_expand = list([p for p in points_to_expand if p[0] < min_goal_score])
-
-    # best_path = list([p[0] for p in best_path])
-    print(f'Min goal score was {min_goal_score}')
-
-    path_to_goal = []
-    score_to_goal = 0
-    point = min_goal_point
-    best_paths_final = {}
-    while True:
-        coord = point[0]
-        if coord == (0, 0):
-            path_to_goal.append(coord)
-            break
-
-        if coord == (9,12):
-            print("We're at the oddity")
-
-        score_of_coord = grid[coord[0]][coord[1]]
-        score_to_goal += score_of_coord
-        path_to_goal.append(coord)
-        best_paths_final[point] = best_paths[point[0]][point[1]][point[2]]
-        next_point = best_paths[point[0]][point[1]][point[2]][1]
-        point = next_point
-
-    path_to_goal.reverse()
-    print(f'Path to goal was: {path_to_goal}')
-    print(f'Score to goal was: {score_to_goal}')
+    end_time = time.time()
+    total_time = end_time - start_time
+    print(f'Min goal score was {min_goal_score}, took {round(total_time,2)}s')
 
 
 
