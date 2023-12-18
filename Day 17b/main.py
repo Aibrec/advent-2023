@@ -6,18 +6,24 @@ import heapq
 start_time = time.time()
 
 file_path = 'input.txt'
-grid = []
 with open(file_path, 'r') as file:
-    for line in file:
-        line = line.strip()
-        grid.append(list([int(n) for n in line]))
+    input = file.read()
+    max_x = input.find('\n')
+    max_y = input.count('\n')
+    grid = input.replace('\n', '')
+
+@functools.cache
+def cost(coord):
+    index = (coord[0] * max_x) + coord[1]
+    return int(grid[index])
 
 # coord format is (y,x)
 # dir format is (0,1), (1,0), and the negatives
 # Point format is (coord, dir, steps_taken, steps_required)
 
-goal = (len(grid)-1, len(grid[0]) - 1)
+goal = (max_y-1, max_x-1)
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+#print(f'Len = {len(grid)}, len line = {len(line)}')
 
 # Path format is [coords]
 # format is [coord][dir][steps]
@@ -38,10 +44,10 @@ def min_score_to_goal(point):
 @functools.cache
 def apply_direction(coord, direction):
     next_coord = (coord[0] + direction[0], coord[1] + direction[1])
-    if not (len(grid) > next_coord[0] >= 0) or not (len(grid[0]) > next_coord[1] >= 0):
+    if not (max_y > next_coord[0] >= 0) or not (max_x > next_coord[1] >= 0):
         return next_coord, None
     else:
-        next_score = grid[next_coord[0]][next_coord[1]]
+        next_score = cost(next_coord)
         return next_coord, next_score
 
 @functools.cache
