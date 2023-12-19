@@ -1,65 +1,107 @@
 import re
-file_path = 'input.txt'
+import copy
+
+file_path = '../Day 19a/input.txt'
 workflow_pattern = r'\b(\w+)\{(.*?)\}'
 
 with open(file_path, 'r') as file:
     workflows = {}
-    parts = []
+    destinations_by_workflow = {}
     reading_workflows = True
+    workflows_with_A = []
     for line in file:
         if line == '\n':
-            reading_workflows = False
-            continue
+            break
 
         if reading_workflows:
             match = re.match(workflow_pattern, line)
             name = match.group(1)
             rules = match.group(2).split(',')
 
-            lambdas = []
+            functions = []
+            possible_destinations = set()
             for i, rule in enumerate(rules):
                 if i == (len(rules)-1):
-                    # Last rule
-                    lambdas.append(lambda part,rule=rule: rule)
+                    result = rule
+                    property = None
+                    comparison = None
+                    value = None
                 else:
                     condition, result = rule.split(':')
-                    property_name = condition[0]
+                    property = condition[0]
                     comparison = condition[1]
                     value = int(condition[2:])
 
-                    if comparison == '>':
-                        lambdas.append(lambda part,property_name=property_name,value=value,result=result: result if part[property_name] > value else None)
-                    elif comparison == '<':
-                        lambdas.append(lambda part,property_name=property_name,value=value,result=result: result if part[property_name] < value else None)
-                    else:
-                        raise ValueError('Unknown comparison')
-            workflows[name] = lambdas
-        else:
-            part = {}
-            properties = (line.strip())[1:-1].split(',')
-            for property in properties:
-                name, value = property.split('=')
-                part[name] = int(value)
-            parts.append(part)
+                possible_destinations.add(result)
+                functions.append((result, property, comparison, value))
+            workflows[name] = functions
+            destinations_by_workflow[name] = possible_destinations
 
-def apply_workflow(name, part):
+workflows_by_destination = {}
+for name, workflow in workflows.items():
+    for rule in workflow:
+        destination = rule[0]
+        if destination not in workflows_by_destination:
+            workflows_by_destination[destination] = set()
+        workflows_by_destination[destination].add(name)
+
+def valid_range(range):
+    return range[1] >= range[0]
+def limit_range_workflow(name, possible_part, required_result):
     workflow = workflows[name]
+    valid_parts = []
+
     for func in workflow:
-        result = func(part)
-        if result is None:
-            continue
-        else:
-            return result
+        result, property, comparison, value = func
+        if result == required_result:
+            # This is the result we're looking for, update the possible part to make this true
+            # Work on a clone so we can keep going. There may be another rule that sends us to this result
+            part = copy.deepcopy(possible_part)
 
-result = 0
-for part in parts:
-    workflow = 'in'
-    while workflow != 'A' and workflow != 'R':
-        print(f'{part} going to {workflow}')
-        workflow = apply_workflow(workflow, part)
-    print(f'\t{part} was {workflow}')
-    if workflow == 'A':
-        result += sum(part.values())
+            if comparison is None:
+                pass
+            elif comparison == '>':
+                part[property][0] = max(part[property][0], value+1)
+            elif comparison == '<':
+                part[property][1] = min(part[property][1], value-1)
 
+            if property is None or valid_range(part[property]):
+                valid_parts.append((name, part))
 
-print(f'result: {result}')
+        # This is not the result we're looking for, update the possible part to make this false
+        if comparison is None:
+            break  # Default can't be made false
+        elif comparison == '>':
+            possible_part[property][1] = min(possible_part[property][1], value)
+        elif comparison == '<':
+            possible_part[property][0] = max(possible_part[property][0], value)
+
+    return valid_parts
+
+# Format is (workflow, part)
+# Part format is {x,m,a,s: [min_allowed, max_allowed]}
+possible_ranges = []
+#for workflow in workflows_by_destination['A']:
+maximally_permissible_part = {}
+for letter in 'xmas':
+    maximally_permissible_part[letter] = [1, 4000]
+possible_ranges.append(('A', maximally_permissible_part))
+
+accepted_parts = []
+while possible_ranges:
+    destination_workflow, possible_part = possible_ranges.pop()
+    if destination_workflow == 'in':
+        accepted_parts.append(possible_part)
+    else:
+        for source_workflow in workflows_by_destination[destination_workflow]:
+            limited_ranges = limit_range_workflow(source_workflow, copy.deepcopy(possible_part), destination_workflow)
+            possible_ranges.extend(limited_ranges)
+
+score = 0
+for part in accepted_parts:
+    possible_options = 1
+    for letter in 'xmas':
+        options_for_letter = part[letter][1] - part[letter][0] + 1
+        possible_options = possible_options * options_for_letter
+    score += possible_options
+print(f'score: {score}')
