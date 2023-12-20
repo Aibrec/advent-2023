@@ -1,6 +1,7 @@
 import re
 import copy
 import queue
+import math
 from collections import deque
 
 file_path = 'input.txt'
@@ -112,12 +113,16 @@ def map_graph():
         type = modules[module_name]['type']
         if len(type) != 1:
             type = ""
+        else:
+            type = f"\\{type}"
 
-        for target in modules[module_name]['destinations']:
+        for target in sorted(modules[module_name]['destinations']):
             target_type = modules[target]['type']
             if len(target_type) != 1:
                 target_type = ""
-            print(f'\t{type}{module_name} -> {target_type}{target}')
+            else:
+                target_type = f"\\{target_type}"
+            print(f'\t"{type}{module_name}" -> "{target_type}{target}"')
     print("")
 
 button_presses = 0
@@ -138,6 +143,12 @@ num_pulses = {
 
 map_graph()
 
+# Found these 4 by looking at the graph generated above
+monitoring = set(['xd', 'vr', 'pf', 'ts'])
+seen_sends_low = {}
+for module in monitoring:
+    seen_sends_low[module] = []
+
 while True:
 #for i in range(1000):
     #print_module_state(button_presses)
@@ -152,11 +163,20 @@ while True:
         if pulse[2] == 'rx' and pulse[1] == LOW:
             print(f'Sent low to rx after {button_presses} button presses')
             exit(1)
+
         # elif pulse[2] == 'rx':
         #     print(f"Sent '{pulse[1]}' to rx after {button_presses} button presses")
         #     print(f"State of dt {modules['dt']['state']}")
         #     print("")
         new_pulses = apply_pulse(*pulse)
+        if pulse[2] in monitoring and new_pulses and new_pulses[0][1] == LOW:
+            seen_sends_low[pulse[2]].append(button_presses)
+            print(f"Saw low for {pulse[2]}")
+            if all(seen_presses for seen_presses in seen_sends_low.values()):
+                print(f"Seen a low for all 4! Lcm is {math.lcm(*[seen_presses[0] for seen_presses in seen_sends_low.values()])}")
+                exit(1)
+
+
         #seen_sends[pulse[2]]['calls'] += 1
         # if new_pulses:
         #     seen_sends[pulse[2]][new_pulses[0][1]].append(seen_sends[pulse[2]]['calls'])
