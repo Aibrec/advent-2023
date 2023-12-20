@@ -106,14 +106,19 @@ def print_module_state(num_presses):
     number_of_true = overall_state.count('1')
     print(f'{num_presses}: {overall_state} : {number_of_true} : len {len(overall_state)}')
 
-# def module_layers():
-#     modules_to_open = ['broadcaster']
-#     layers = {
-#         0: ['broadcaster']
-#     }
-#
-#     while modules_to_open:
-#         mo
+
+def map_graph():
+    for module_name in sorted(modules.keys()):
+        type = modules[module_name]['type']
+        if len(type) != 1:
+            type = ""
+
+        for target in modules[module_name]['destinations']:
+            target_type = modules[target]['type']
+            if len(target_type) != 1:
+                target_type = ""
+            print(f'\t{type}{module_name} -> {target_type}{target}')
+    print("")
 
 button_presses = 0
 seen_polarities = {}
@@ -130,6 +135,8 @@ num_pulses = {
     HIGH: 0,
     LOW: 0,
 }
+
+map_graph()
 
 while True:
 #for i in range(1000):
