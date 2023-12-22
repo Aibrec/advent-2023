@@ -78,243 +78,25 @@ def flood_fill_min_paths(starting_square):
 minimum_distances_from_start = flood_fill_min_paths(start)
 main_visitable_squares_even = set()
 main_visitable_squares_odd = set()
+
+even_diamond_tiles = set()
+odd_diamond_tiles = set()
+
+odd_corner_tiles = set()
+even_corner_tiles = set()
 for coord, distance in minimum_distances_from_start.items():
-    if distance % 2 == 0:
-        main_visitable_squares_even.add(coord)
-    else:
+    if distance % 2 == 0: # I got even and odd backward and am leaving it to avoid renaming all the variables
         main_visitable_squares_odd.add(coord)
-
-even_walkable_total = len(main_visitable_squares_even)
-odd_walkable_total = len(main_visitable_squares_odd)
-
-even_corners_walkable = [0,0,0,0]
-odd_corners_walkable = [0,0,0,0]
-
-# top left
-row_length = 65
-area = 0
-for y in range(0, 65):
-    line = ""
-    for x in range(0, row_length):
-        area += 1
-        if (y,x) in main_visitable_squares_even:
-            even_corners_walkable[0] += 1
-        elif (y,x) in main_visitable_squares_odd:
-            odd_corners_walkable[0] += 1
-        line += yard[y][x]
-    row_length -= 1
-    #print(f"{y}: {line}")
-print(f"Area was {area}\n")
-
-# top right
-area = 0
-for y in range(0, 65):
-    line = ""
-    for x in range(66+y, 131):
-        area += 1
-        if (y,x) in main_visitable_squares_even:
-            even_corners_walkable[1] += 1
-        elif (y,x) in main_visitable_squares_odd:
-            odd_corners_walkable[1] += 1
-        line += yard[y][x]
-    row_length -= 1
-    #print(f"{y}: {line}")
-print(f"Area was {area}\n")
-
-# bottom right
-row_length = 1
-area = 0
-for y in range(66, 131):
-    line = ""
-    for x in range(130, 130-row_length, -1):
-        area += 1
-        if (y,x) in main_visitable_squares_even:
-            even_corners_walkable[2] += 1
-        elif (y,x) in main_visitable_squares_odd:
-            odd_corners_walkable[2] += 1
-        line += yard[y][x]
-    row_length += 1
-    #print(f"{y}: {line}")
-print(f"Area was {area}\n")
-
-# bottom left
-row_length = 1
-area = 0
-for y in range(66, 131):
-    line = ""
-    for x in range(0, row_length):
-        area += 1
-        if (y,x) in main_visitable_squares_even:
-            even_corners_walkable[3] += 1
-        elif (y,x) in main_visitable_squares_odd:
-            odd_corners_walkable[3] += 1
-        line += yard[y][x]
-    row_length += 1
-    #print(f"{y}: {line}")
-print(f"Area was {area}\n")
-
-#
-# include_even_corners_walkable = [0,0,0,0]
-# include_odd_corners_walkable = [0,0,0,0]
-#
-# # top left, to include
-# row_length = 66
-# area = 0
-# for y in range(0, 66):
-#     line = ""
-#     for x in range(0, row_length):
-#         area += 1
-#         if (y,x) in main_visitable_squares_even:
-#             include_even_corners_walkable[0] += 1
-#         elif (y,x) in main_visitable_squares_odd:
-#             include_odd_corners_walkable[0] += 1
-#         line += yard[y][x]
-#     row_length -= 1
-#     #print(f"{y}: {line}")
-# print(f"Area was {area}\n")
-#
-# # top right, to include
-# area = 0
-# for y in range(0, 66):
-#     line = ""
-#     for x in range(65+y, 131):
-#         area += 1
-#         if (y,x) in main_visitable_squares_even:
-#             even_corners_walkable[1] += 1
-#         elif (y,x) in main_visitable_squares_odd:
-#             odd_corners_walkable[1] += 1
-#         line += yard[y][x]
-#     row_length -= 1
-#     #print(f"{y}: {line}")
-# print(f"Area was {area}\n")
-#
-# # bottom right
-# row_length = 1
-# area = 0
-# for y in range(66, 131):
-#     line = ""
-#     for x in range(130, 130-row_length, -1):
-#         area += 1
-#         if (y,x) in main_visitable_squares_even:
-#             even_corners_walkable[2] += 1
-#         elif (y,x) in main_visitable_squares_odd:
-#             odd_corners_walkable[2] += 1
-#         line += yard[y][x]
-#     row_length += 1
-#     #print(f"{y}: {line}")
-# print(f"Area was {area}\n")
-#
-# # bottom left
-# row_length = 1
-# area = 0
-# for y in range(66, 131):
-#     line = ""
-#     for x in range(0, row_length):
-#         area += 1
-#         if (y,x) in main_visitable_squares_even:
-#             even_corners_walkable[3] += 1
-#         elif (y,x) in main_visitable_squares_odd:
-#             odd_corners_walkable[3] += 1
-#         line += yard[y][x]
-#     row_length += 1
-#     #print(f"{y}: {line}")
-# print(f"Area was {area}\n")
-
-# From notepad math, furthest we can go in a direction is 202300 full fields
-# It's a taxicab circle, so each of the sides will have the same length in fields
-max_path_length = 26501365
-side_length = int((26501365 - 65) / 131)
-
-# Total squares, 3+5+7... +(202300*2)+1 there's a formula for this but here's a loop
-total_walkable = 0
-even = 1
-odd = 2
-next_increase = 'even'
-lines = 0
-while True:
-    total_walkable += (odd_walkable_total * odd) + (even_walkable_total * even)
-    lines += 1
-
-    if lines == 1:
-        # Subtract for the bottom triangle
-        total_walkable -= even_corners_walkable[2]
-        total_walkable -= even_corners_walkable[3]
-
-    # Subtract for the two outer edges
-    if lines % 2 == 0:
-        # On even, they cut off just the corner
-        total_walkable -= even_corners_walkable[2]
-        total_walkable -= even_corners_walkable[3]
+        if distance > 65:
+            odd_corner_tiles.add(coord)
+        else:
+            odd_diamond_tiles.add(coord)
     else:
-        # On odd, they cut off all but a corner
-        total_walkable -= (odd_walkable_total - odd_corners_walkable[0] - 130)
-        total_walkable -= (odd_walkable_total - odd_corners_walkable[1] - 130)
-
-    if even+odd == ((side_length*2)+1):
-        break
-
-    if next_increase == 'even':
-        even += 2
-        next_increase = 'odd'
-    else:
-        odd += 2
-        next_increase = 'even'
-
-# Add the center line
-total_walkable += ((odd_walkable_total * odd) + (even_walkable_total * even))
-
-# Subtract for the left triangle
-total_walkable -= even_corners_walkable[0]
-total_walkable -= even_corners_walkable[3]
-
-# Subtract for the right triangle
-total_walkable -= even_corners_walkable[1]
-total_walkable -= even_corners_walkable[2]
-
-# Now do the top of the structure
-even = 1
-odd = 2
-next_increase = 'even'
-lines = 0
-while True:
-    total_walkable += (odd_walkable_total * odd) + (even_walkable_total * even)
-    lines += 1
-
-    if lines == 1:
-        # Subtract for the top triangle
-        total_walkable -= even_corners_walkable[0]
-        total_walkable -= even_corners_walkable[1]
-
-    # Subtract for the two outer edges
-    if lines % 2 == 0:
-        # On even, they cut off just the corner
-        total_walkable -= even_corners_walkable[1]
-        total_walkable -= even_corners_walkable[0]
-    else:
-        # On odd, they cut off all but a corner
-        total_walkable -= (odd_walkable_total - odd_corners_walkable[2] - 130)
-        total_walkable -= (odd_walkable_total - odd_corners_walkable[3] - 130)
-
-    if even+odd == ((side_length*2)+1):
-        break
-
-    if next_increase == 'even':
-        even += 2
-        next_increase = 'odd'
-    else:
-        odd += 2
-        next_increase = 'even'
-
-print(f'Final walkable squares {total_walkable}')
-#608196733289489 was not right
-#608193767979991 was right
-visitables = []
-# Just find some multiples and stick them in quadratic solver
-for i in range(max_path_length):
-    visited_squares = squares_visitable_from(i, start, infinite=True)
-    print(f"{i}, {len(visited_squares)}")
-    if (i-65) % 131 == 0:
-        visitables.append(len(visited_squares))
+        main_visitable_squares_even.add(coord)
+        if distance > 65:
+            even_corner_tiles.add(coord)
+        else:
+            even_diamond_tiles.add(coord)
 
 def print_map(visited_squares):
     for y in range(len(yard)):
@@ -324,10 +106,119 @@ def print_map(visited_squares):
                 line += 'O'
             else:
                 line += yard[y][x]
-        print(f'{y}: {line}')
+        print(f':{line}')
     print('')
-print_map(visited_squares)
 
+print_map(even_diamond_tiles)
+
+even_walkable_total = len(main_visitable_squares_even)
+odd_walkable_total = len(main_visitable_squares_odd)
+def sort_corners(corner_tiles):
+    corners = [set(), set(), set(), set()]
+    for coord in corner_tiles:
+        vertical = 'top' if coord[0] < 65 else 'bottom'
+        horizontal = 'left' if coord[0] < 65 else 'right'
+
+        if vertical == 'top' and horizontal == 'left':
+            corners[0].add(coord)
+        elif vertical == 'top' and horizontal == 'right':
+            corners[1].add(coord)
+        elif vertical == 'bottom' and horizontal == 'right':
+            corners[2].add(coord)
+        elif vertical == 'bottom' and horizontal == 'left':
+            corners[3].add(coord)
+        else:
+            raise ValueError("More than 65 away and doesn't go in a corner")
+    return corners
+
+odd_corners = sort_corners(odd_corner_tiles)
+even_corners = sort_corners(even_corner_tiles)
+
+even_corners_walkable = [0,0,0,0]
+odd_corners_walkable = [0,0,0,0]
+for i in range(4):
+    even_corners_walkable[i] = len(even_corners[i])
+    odd_corners_walkable[i] = len(odd_corners[i])
+
+even_diamond_walkable = len(even_diamond_tiles)
+odd_diamond_walkable = len(odd_diamond_tiles)
+
+# From notepad math, furthest we can go in a direction is 202300 full fields
+# It's a taxicab circle, so each of the sides will have the same length in fields
+max_path_length = 26501365
+side_length = int((max_path_length - 65) / 131)
+
+# Total squares, 3+5+7... +(202300*2)+1 there's a formula for this but here's a loop
+
+total_walkable = 0
+
+# Add the bottom triangle line
+total_walkable += even_diamond_walkable + even_corners_walkable[0] + even_corners_walkable[1]
+# And squares beside it
+total_walkable += odd_corners_walkable[1]
+total_walkable += odd_corners_walkable[0]
+
+even = 0
+odd = 1
+lines = 0
+while True:
+    total_walkable += (odd_walkable_total * odd) + (even_walkable_total * even)
+    lines += 1
+
+    # Add the left
+    total_walkable += even_diamond_walkable + even_corners_walkable[0] + even_corners_walkable[1] + even_corners_walkable[2]
+    total_walkable += odd_corners_walkable[1]
+
+    # Add the right
+    total_walkable += even_diamond_walkable + even_corners_walkable[0] + even_corners_walkable[1] + even_corners_walkable[3]
+    total_walkable += odd_corners_walkable[0]
+
+    if even+odd+4 == ((side_length*2)+1):
+        break
+
+    even += 1
+    odd += 1
+
+# Add the center line
+total_walkable += ((odd_walkable_total * (odd+1)) + (even_walkable_total * (even+1)))
+
+# Add the left triangle
+total_walkable += even_diamond_walkable + even_corners_walkable[1] + even_corners_walkable[2]
+
+# Add the right triangle
+total_walkable += even_diamond_walkable + even_corners_walkable[0] + even_corners_walkable[3]
+
+# Now do the top of the structure
+
+# Add the top triangle line
+total_walkable += even_diamond_walkable + even_corners_walkable[2] + even_corners_walkable[3]
+# And squares beside it
+total_walkable += odd_corners_walkable[2]
+total_walkable += odd_corners_walkable[3]
+
+even = 0
+odd = 1
+lines = 0
+while True:
+    total_walkable += (odd_walkable_total * odd) + (even_walkable_total * even)
+    lines += 1
+
+    # Add the left
+    total_walkable += even_diamond_walkable + even_corners_walkable[1] + even_corners_walkable[2] + even_corners_walkable[3]
+    total_walkable += odd_corners_walkable[2]
+
+    # Add the right
+    total_walkable += even_diamond_walkable + even_corners_walkable[0] + even_corners_walkable[2] + even_corners_walkable[3]
+    total_walkable += odd_corners_walkable[3]
+
+    if even + odd + 4 == ((side_length * 2) + 1):
+        break
+
+    even += 1
+    odd += 1
+
+print(f'Final walkable squares {total_walkable}')
+#608193767979991
 
 
 
