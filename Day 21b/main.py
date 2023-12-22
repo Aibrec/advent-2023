@@ -1,7 +1,3 @@
-import re
-import copy
-import math
-import functools
 from collections import deque
 file_path = 'input.txt'
 
@@ -33,7 +29,6 @@ max_x = len(yard[0])
 
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-@functools.cache
 def apply_direction(coord, direction, num=1, infinite=False):
     next_coord = (coord[0] + direction[0]*num, coord[1] + direction[1]*num)
     if not infinite:
@@ -45,18 +40,6 @@ def get_plot(coord):
     y = coord[0] % max_y
     x = coord[1] % max_x
     return yard[y][x]
-
-@functools.cache
-def squares_visitable_from(length, square, infinite=False):
-    if length == 0:
-        return {square}
-    visitable_squares = set()
-    for direction in directions:
-        next = apply_direction(square, direction, infinite=infinite)
-        if next and (get_plot(next) != '#'):
-            visitable_from_this_square = squares_visitable_from(length-1, next)
-            visitable_squares.update(visitable_from_this_square)
-    return visitable_squares
 
 def flood_fill_min_paths(starting_square):
     minimum_distances = {
@@ -143,12 +126,8 @@ for i in range(4):
 even_diamond_walkable = len(even_diamond_tiles)
 odd_diamond_walkable = len(odd_diamond_tiles)
 
-# From notepad math, furthest we can go in a direction is 202300 full fields
-# It's a taxicab circle, so each of the sides will have the same length in fields
 max_path_length = 26501365
 side_length = int((max_path_length - 65) / 131)
-
-# Total squares, 3+5+7... +(202300*2)+1 there's a formula for this but here's a loop
 
 total_walkable = 0
 
