@@ -17,23 +17,6 @@ def apply_direction(coords, direction):
         return None
     else:
         return next_coord
-
-def apply_slope(coords, slope):
-    if slope == '^':
-        next_coord = apply_direction(coords, (-1,0))
-    elif slope == '>':
-        next_coord = apply_direction(coords, (0, 1))
-    elif slope == 'v':
-        next_coord = apply_direction(coords, (1, 0))
-    elif slope == '<':
-        next_coord = apply_direction(coords, (0, -1))
-    else:
-        raise ValueError('unknown slope')
-
-    if not (len(forest) > next_coord[0] >= 0) or not (len(forest[0]) > next_coord[1] >= 0):
-        return None
-    return next_coord
-
 def get_adjacent_tiles(coord, ignore_set=set(), ignore_tile=None):
     adjacent_tiles = []
     for direction in directions:
