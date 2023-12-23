@@ -1,4 +1,5 @@
-import networkx
+import time
+start_time = time.time()
 file_path = 'input.txt'
 
 with open(file_path, 'r') as file:
@@ -31,10 +32,6 @@ def apply_slope(coords, slope):
         return None
     return next_coord
 
-graph = networkx.DiGraph()
-seen = set()
-slopes = []
-
 start = (0, forest[0].find('.'))
 end = (len(forest)-1, forest[-1].find('.'))
 
@@ -63,9 +60,10 @@ while open_paths:
                     new_path.add(adjacent)
                     open_paths.append((adjacent, new_path))
 
-longest_path = -1
-for path in complete_paths:
-    length = len(path) - 1 # We have the start square in the path
-    print(f'Path length was {length}')
-    longest_path = max(longest_path, length)
+longest_path = max([len(path) for path in complete_paths]) + 1 # We have the start square in the path
+# for path in complete_paths:
+#     length = len(path) - 1 # We have the start square in the path
+#     print(f'Path length was {length}')
+#     longest_path = max(longest_path, length)
 print(f'\nLongest path was {longest_path}')
+print(f'Took {time.time() - start_time} seconds')
