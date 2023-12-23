@@ -1,6 +1,3 @@
-import heapq
-import sys
-
 import networkx
 file_path = 'input.txt'
 

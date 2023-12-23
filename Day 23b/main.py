@@ -1,7 +1,7 @@
-import heapq
-import sys
+import time
 import networkx
 
+start_time = time.time()
 file_path = 'input.txt'
 
 with open(file_path, 'r') as file:
@@ -116,8 +116,9 @@ while open_paths:
             else:
                 open_paths.append((next, next_path, path_weight + edge_weight, next_ordered_path))
 
-longest_path = -1
-for length, path in sorted(start_to_end_paths):
-    print(f'Path length was {length}: {len(path)} : {path}')
-    longest_path = max(longest_path, length)
+longest_path = max([length for length, path in start_to_end_paths])
+# for length, path in sorted(start_to_end_paths):
+#     print(f'Path length was {length}: {len(path)} : {path}')
+#     longest_path = max(longest_path, length)
 print(f'\nLongest path was {longest_path}')
+print(f'Took {time.time() - start_time} seconds')
