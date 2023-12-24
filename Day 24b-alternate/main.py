@@ -4,6 +4,33 @@ from shapely.geometry import LineString, Point
 start_time = time.time()
 file_path = 'input.txt'
 
+# Let's consider from the perspective of the stone. It stays at some spot and does not move
+# For simplicity, let's say it stays at 0,0, 0
+#
+# So another stone starts at 19,13,30 and that is it's position relative to us
+# 	It continues -2,1,-2 and that remains relative to us if we are not moving
+#
+# What if our 'thrown' stone is moving at 1,1,1?
+# 	t0: 19,13,30 : 0,0,0
+# 	t1: 17,14,28 : 1,1,1
+# 		Relative to us that is 16,13,27
+#
+# 	So its relative velocity is actually
+# 		-3,0,-3 . So to get relative velocity we subtract our thrown velocity
+#
+# 	For what thrown velocity will we hit the rock? Or, for what thrown velocity will the rock cross 0,0,0 at some T
+#
+# 	So in general we can ask,  what velocity can we add to 3 numbers to get an intersection?
+#
+#
+#
+# What if our thrown stone started at 5,4,3
+# 	t0: 19,13,30 : 5,4,3 | so relative to us, it's 14,9,27
+# 	t1: 17,14,28 : 6,5,4 | so relative to us it's 11,9,24
+#
+# 	So it's relative velocity is -3,0,-3
+# 		so the relative velocity is the same regardless of where we start
+
 with open(file_path, 'r') as file:
     stones = []
     for line in file:
