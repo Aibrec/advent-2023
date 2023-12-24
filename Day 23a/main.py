@@ -35,37 +35,35 @@ def apply_slope(coords, slope):
 start = (0, forest[0].find('.'))
 end = (len(forest)-1, forest[-1].find('.'))
 
-longest_path = 0
+complete_paths = []
 open_paths = [(start, set([start]))]
 while open_paths:
     coord, path = open_paths.pop()
 
     for direction in directions:
         adjacent = apply_direction(coord, direction)
-        if adjacent and forest[adjacent[0]][adjacent[1]] != '#' and adjacent not in path:
+        if adjacent and adjacent not in path:
             if adjacent == end:
                 # End of the road
                 path.add(adjacent)
-                if longest_path < (len(path)+1):
-                    longest_path = max(longest_path, len(path)+1)
-                    print(f'New longest path: {longest_path} : {time.time() - start_time} seconds')
-            else:
-                new_path = set(path)
-                # # Maybe there are slopes to slopes? haven't looked
-                # while forest[adjacent[0]][adjacent[1]] in '^>v<':
-                #     new_path.add(adjacent)
-                #     adjacent = apply_slope(adjacent, forest[adjacent[0]][adjacent[1]])
-                #     if not adjacent or adjacent in path:
-                #         break
-                # else:
-                #     if forest[adjacent[0]][adjacent[1]] == '.':
-                new_path.add(adjacent)
-                open_paths.append((adjacent, new_path))
+                complete_paths.append(path)
 
-# longest_path = max([len(path) for path in complete_paths]) + 1 # We have the start square in the path
-# # for path in complete_paths:
-# #     length = len(path) - 1 # We have the start square in the path
-# #     print(f'Path length was {length}')
-# #     longest_path = max(longest_path, length)
-# print(f'\nLongest path was {longest_path}')
+            new_path = set(path)
+            # Maybe there are slopes to slopes? haven't looked
+            while forest[adjacent[0]][adjacent[1]] in '^>v<':
+                new_path.add(adjacent)
+                adjacent = apply_slope(adjacent, forest[adjacent[0]][adjacent[1]])
+                if not adjacent or adjacent in path:
+                    break
+            else:
+                if forest[adjacent[0]][adjacent[1]] == '.':
+                    new_path.add(adjacent)
+                    open_paths.append((adjacent, new_path))
+
+longest_path = max([len(path) for path in complete_paths]) + 1 # We have the start square in the path
+# for path in complete_paths:
+#     length = len(path) - 1 # We have the start square in the path
+#     print(f'Path length was {length}')
+#     longest_path = max(longest_path, length)
+print(f'\nLongest path was {longest_path}')
 print(f'Took {time.time() - start_time} seconds')
