@@ -14,26 +14,27 @@ with open(file_path, 'r') as file:
         velocity = list([int(i) for i in velocity.split(',')])
         stones.append((coord, velocity))
 
-t = Symbol('t', INT)
 throw_location = list([Symbol(s, INT) for s in "abc"])
 throw_velocity = list([Symbol(s, INT) for s in "def"])
 
-coords_at_time = list([Plus(throw_location[i], Times(throw_velocity[i], t)) for i in range(3)])
-
 constraints = []
+domain = []
 for coord, velocity in stones:
+    t = Symbol(f't{len(domain)}', INT)
+    domain.append(GE(t, Int(1)))
     for i in range(3):
+        # coord[0] + velocity[0]*time = throw_location[0] + throw_velocity[0]*time
         lhs = coord[i] + velocity[i]*t
-        constraints.append(Equals(lhs, coords_at_time[i]))
-    # coord[0] + velocity[0]*time = throw_location[0] + throw_velocity[0]*time
+        rhs = Plus(throw_location[i], Times(throw_velocity[i], t))
+        constraints.append(Equals(lhs, rhs))
 
-domain = GE(t, Int(0))
-formula = And(constraints)
+formula = And(And(domain), And(constraints))
 print(formula)
 
 model = get_model(formula)
 if model:
   print(model)
+  print(f"a+b+c: {model.get_value(throw_location[0]).constant_value()+model.get_value(throw_location[1]).constant_value()+model.get_value(throw_location[2]).constant_value()}")
 else:
   print("No solution found")
 
