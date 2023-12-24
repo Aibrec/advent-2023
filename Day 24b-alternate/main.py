@@ -67,10 +67,7 @@ test_stones = stones[:3]
 for xd in range(v_min, v_max):
     for yd in range(v_min, v_max):
         for zd in range(v_min, v_max):
-            # if xd == -3 and yd == 1 and zd == 2:
-            #     print('Test correct')
             thrown_velocity = (xd,yd,zd)
-            #thrown_velocity = (263, 120, 21)
             test_stones_in_thrown_stone_reference_frame = list([(coord, subtract_coord(v, thrown_velocity)) for coord, v in test_stones])
 
             test_line_segments = list([line_segment(coord, velocity) for coord, velocity in test_stones_in_thrown_stone_reference_frame])
