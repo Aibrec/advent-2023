@@ -1,5 +1,6 @@
 import time
 import networkx
+import itertools
 
 start_time = time.time()
 file_path = 'input.txt'
@@ -30,18 +31,17 @@ with open(file_path, 'r') as file:
 # Run dot -Tsvg .\graph.dot > graph.html
 # Look at the graph for the 3 lines that split it
 # Place the values below
+# cut = [("sfm", "vmt"), ("vph", "mfc"), ("rmg", "fql")]
 
-a = ("sfm", "vmt")
-b = ("vph", "mfc")
-c = ("rmg", "fql")
-
-temp_graph = graph.copy()
-temp_graph.remove_edge(a[0], a[1])
-temp_graph.remove_edge(b[0], b[1])
-temp_graph.remove_edge(c[0], c[1])
-
-sub_graphs = list(networkx.connected_components(temp_graph))
+# Or if you've got time...
+cut = networkx.minimum_edge_cut(graph)
+sub_graphs = list(networkx.connected_components(graph))
 if len(sub_graphs) == 2:
     print(f'found them: {len(sub_graphs[0]) * len(sub_graphs[1])}')
 
+for edge in cut:
+    graph.remove_edge(edge[0], edge[1])
+
+sub_graphs = list(networkx.connected_components(graph))
+print(f'found them: {len(sub_graphs[0]) * len(sub_graphs[1])}')
 print(f'Took {time.time() - start_time} seconds')
